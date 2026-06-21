@@ -1,287 +1,296 @@
 <template>
-  <div class="products-page">
+  <div>
     <Toast position="center" />
 
-    <div class="km-header">
-      <div class="km-logo">
-        <Image src="/logo_kombomarket_1x.jpg" class="km-logo-img" />
-        <div class="km-logo-text">
-          <h1>Комбо маркет</h1>
-          <p>Каждый может больше</p>
+    <!-- ROW 1: AD & SEARCH -->
+    <section class="max-w-[1400px] mx-auto px-4 py-4 flex flex-col md:flex-row gap-4 h-auto md:h-24">
+      <div class="flex-1 bg-khaki-dark rounded-3xl flex items-center px-8 text-neon-lemon relative overflow-hidden group border-b-4 border-neon-lemon">
+        <div class="relative z-10">
+          <span class="text-[10px] font-black uppercase tracking-widest opacity-60 italic">Combo Market</span>
+          <p class="text-xl font-black leading-none mt-1">РЕШИМ ЛЮБУЮ ЗАДАЧУ</p>
+        </div>
+        <div class="absolute right-[-10px] top-[-10px] w-32 h-32 bg-neon-lemon/5 rounded-full blur-2xl"></div>
+      </div>
+
+      <div class="flex-[2] flex gap-3">
+        <AutoComplete
+          v-model="TextToFilter"
+          :suggestions="filteredText"
+          forceSelection
+          fluid
+          optionLabel="Name"
+          @complete="searchTextToFilter($event)"
+          @keydown.enter="filterFilteredCard"
+          placeholder="Поиск категории, услуги или товара..."
+          class="flex-1 bg-white shadow-sm text-lg"
+        />
+        <button
+          @click="filterFilteredCard"
+          class="btn-neon px-12 rounded-2xl text-lg flex items-center justify-center cursor-pointer"
+        >
+          НАЙТИ
+        </button>
+      </div>
+    </section>
+
+    <!-- ROW 3: ACTION & QUICK CATEGORIES -->
+    <section class="max-w-[1400px] mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
+      <div class="min-w-[280px] flex flex-col gap-6">
+        <button @click="clickPostAd" class="btn-neon py-6 rounded-[2rem] text-xl tracking-tight shadow-2xl cursor-pointer">
+          РАЗМЕСТИТЬ ОБЪЯВЛЕНИЕ
+        </button>
+        <button @click="showSupportModal" class="flex items-center gap-4 text-khaki-mid font-black px-6 py-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all cursor-pointer">
+          <span class="text-2xl">🎧</span>
+          <span>ТЕХПОДДЕРЖКА</span>
+        </button>
+      </div>
+
+      <div class="flex-1 bg-white p-8 rounded-[2.5rem] border border-khaki-mid/5 shadow-inner">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-2 gap-y-4">
+          <div
+            v-for="cat in quickCategories"
+            :key="cat"
+            @click="quickSelect(cat)"
+            class="text-[10px] font-black text-khaki-mid uppercase hover:text-neon-lemon cursor-pointer transition-colors"
+          >
+            {{ cat }}
+          </div>
         </div>
       </div>
+    </section>
 
-      <div class="km-search">
-        <AutoComplete v-model="TextToFilter" :suggestions="filteredText" forceSelection fluid optionLabel="Name"
-          @complete="searchTextToFilter($event)" @keydown.enter="filterFilteredCard" placeholder="Поиск категории, услуги или товара…" />
-        <Button label="Найти" @click="filterFilteredCard" class="km-find-btn" />
+    <!-- ROW 4: PREMIUM SERVICES -->
+    <section class="max-w-[1400px] mx-auto px-4 py-10">
+      <h3 class="text-2xl font-black mb-8 text-khaki-dark uppercase">Премиум предложения</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div
+          v-for="promo in promoCards"
+          :key="promo.id"
+          @click="selectedPromo = promo"
+          class="promo-card cursor-pointer group"
+        >
+          <img :src="promo.img" :alt="promo.title" class="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-500">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent z-10"></div>
+          <div class="absolute bottom-8 left-8 z-20">
+            <span class="px-2 py-1 bg-neon-lemon text-khaki-dark text-[10px] font-black rounded mb-2 inline-block">VIP</span>
+            <h4 class="text-lg font-black text-white leading-tight uppercase italic">{{ promo.title }}</h4>
+          </div>
+        </div>
       </div>
+    </section>
 
-      <div class="km-nav">
-        <Button label="Каталог" @click="showCategories" class="km-pill" />
-        <Button label="Ваш город" @click="getGeoposition" class="km-pill" />
-        <Button label="Войти" @click="enterSeller" class="km-pill" />
-        <Button icon="pi pi-heart" @click="enterFavoriteDoc" class="km-pill km-pill--icon" aria-label="Избранное" />
+    <!-- ROW 5: CATEGORY GRID (CUSTOM SVG ICONS) -->
+    <section class="max-w-[1400px] mx-auto px-4 py-12">
+      <h3 class="text-2xl font-black mb-8 text-khaki-dark uppercase tracking-tight">Популярные категории</h3>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4">
+        <div
+          v-for="(cat, idx) in categories"
+          :key="cat.id"
+          @click="filterCategories(cat.Name)"
+          class="category-card p-6 bg-white border border-slate-100 rounded-[2rem] flex flex-col items-center text-center group hover:border-khaki-mid/10"
+        >
+          <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4 shadow-sm group-hover:bg-khaki-dark group-hover:shadow-md transition-all">
+            <CategoryIcon :icon="getIconForCategory(cat.Name, idx)" />
+          </div>
+          <span class="text-[10px] font-black text-slate-800 leading-tight uppercase group-hover:text-khaki-mid transition-colors">
+            {{ cat.Name }}
+          </span>
+        </div>
       </div>
-    </div>
+    </section>
 
-    <div class="km-row">
-      <Button label="Разместить объявление" icon="pi pi-pencil" @click="clickPostAd" class="km-post-btn" />
-      <div class="km-support">
-        <i class="pi pi-headphones" />
-        <span>Техподдержка</span>
-      </div>
-      <div class="km-cats">
-        <button v-for="cat in categories" :key="cat.id" class="km-cat" @click="filterCategories(cat.Name)">
-          {{ cat.Name }}
+    <!-- ROW 6: PRODUCT FEED -->
+    <section class="max-w-[1400px] mx-auto px-4 py-12 border-t border-khaki-mid/5">
+      <div class="flex justify-between items-center mb-8">
+        <h3 class="text-2xl font-black text-khaki-dark uppercase">
+          {{ isFiltered ? `Результаты поиска` : 'Свежие объявления' }}
+        </h3>
+        <button
+          v-if="isFiltered"
+          @click="clearFilters"
+          class="text-xs font-bold text-khaki-mid hover:text-neon-lemon uppercase tracking-wider transition-colors"
+        >
+          Сбросить фильтр &times;
         </button>
       </div>
-    </div>
 
-    <h1 class="km-section-title">Российские товары и услуги собственного производства</h1>
-    <div class="km-type-row">
-      <Button label="Товары" @click="enterShowFormProduct" class="km-pill" />
-      <Button label="Услуги" @click="enterShowFormService" class="km-pill" />
-    </div>
+      <div v-if="FilteredCard.length === 0" class="text-center py-16 bg-white border rounded-[2rem]">
+        <p class="text-lg font-bold text-slate-400">Объявлений не найдено.</p>
+        <button @click="clearFilters" class="mt-4 text-xs font-black text-khaki-dark hover:text-neon-lemon uppercase underline">
+          Показать все
+        </button>
+      </div>
 
-    <div class="product-grid">
-      <ProductCardMini v-for="card in FilteredCard" :key="card.id" :card="card" :clickFeedBack="clickFeedBack"
-        :clickAddToFavorite="clickAddToFavorite" class="product-card-mini" />
-    </div>
+      <div v-else class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+        <div
+          v-for="card in FilteredCard"
+          :key="card.id"
+          @click="selectedProduct = card"
+          class="standard-card group"
+        >
+          <div class="aspect-square bg-slate-100 relative overflow-hidden">
+            <img :src="card.imageUrl" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy">
+            <div class="absolute top-3 left-3 px-2 py-1 bg-khaki-dark text-neon-lemon text-[8px] font-black rounded uppercase">
+              {{ card.typeOfSale === 'Service' ? 'Услуга' : 'Товар' }}
+            </div>
+            <!-- Favorite button -->
+            <button
+              @click.stop="clickAddToFavorite(card)"
+              :disabled="card.inFavorit"
+              class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 shadow-sm flex items-center justify-center hover:bg-neon-lemon transition-colors cursor-pointer"
+              :class="{ 'text-red-500': card.inFavorit, 'text-slate-400': !card.inFavorit }"
+            >
+              ❤️
+            </button>
+          </div>
+          <div class="p-5">
+            <p class="text-sm font-black text-khaki-dark leading-tight h-10 overflow-hidden">
+              {{ card.Name }}
+            </p>
+            <p class="text-neon-lemon bg-khaki-dark inline-block px-3 py-1 text-xs font-black rounded-lg mt-4">
+              {{ card.Price }} ₽
+            </p>
+            <div class="mt-2 flex items-center gap-1">
+              <span class="text-yellow-500 text-xs">⭐</span>
+              <span class="text-[10px] font-bold text-slate-400">Рейтинг: {{ card.Level || 5 }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <!-- Гостевой диалог -->
-    <Dialog v-model:visible="visible" modal header="Пожалуйста войдите или зарегистрируйтесь" :style="{ width: '20%' }">
-      <div align="center">
-        <Button label="Вход" @click="enterSeller" />
+    <!-- Master Modals Container -->
+    <ModalsContainer
+      :categories="categories"
+      :clickAddToFavorite="clickAddToFavorite"
+      :clickShowCard="clickShowCard"
+      :filterCategories="filterCategories"
+    />
+
+    <!-- Local Dialog for Guest Alert -->
+    <Dialog v-model:visible="guestAlertVisible" modal header="Пожалуйста войдите или зарегистрируйтесь" :style="{ width: '25rem' }">
+      <div class="p-6 text-center">
+        <p class="text-sm text-slate-500 mb-6">Для совершения этого действия необходимо войти в систему или создать новый аккаунт.</p>
+        <div class="flex gap-4">
+          <button @click="navigateToAuth" class="flex-1 btn-neon py-3 rounded-xl uppercase font-bold">Вход</button>
+          <button @click="guestAlertVisible = false" class="flex-1 border border-slate-200 py-3 rounded-xl uppercase font-bold text-slate-400 hover:text-slate-600">Отмена</button>
+        </div>
       </div>
     </Dialog>
 
-    <!-- Шаг 1: выбор категории -->
+    <!-- Шаг 1: выбор категории (от Динара, стилизовано) -->
     <Dialog v-model:visible="visibleCategories" modal header="Выберите категорию" :style="{ width: '420px' }">
       <div class="cat-dialog-grid">
-        <button v-for="cat in categories" :key="cat.id" class="cat-dialog-item" @click="selectCategoryForAd(cat)">
+        <button v-for="cat in categories" :key="cat.id" class="cat-dialog-item font-bold" @click="selectCategoryForAd(cat)">
           {{ cat.Name }}
         </button>
       </div>
     </Dialog>
 
-    <!-- Шаг 2: основные поля карточки товара, сохраняя стили формы со страницы редактирования -->
+    <!-- Шаг 2: основные поля карточки товара (от Динара, стилизовано) -->
     <Dialog v-model:visible="visibleCreateCard" modal header="Новое объявление" :style="{ width: '480px' }">
-      <div align="center">
-        <div class="selected-category-row">
-          <label><b>Категория: </b></label>
-          <div class="selected-category-chip">
+      <div class="p-4">
+        <div class="selected-category-row flex items-center justify-between mb-4">
+          <span><b>Категория: </b></span>
+          <div class="selected-category-chip px-3 py-1 bg-neon-lemon/20 text-khaki-dark border border-neon-lemon rounded-full text-xs font-bold">
             {{ selectedCategory?.Name }}
-            <button type="button" class="chip-change" @click="backToCategoryStep">Изменить</button>
+            <button type="button" class="chip-change text-khaki-mid underline ml-2 hover:text-khaki-dark" @click="backToCategoryStep">Изменить</button>
           </div>
         </div>
         <Divider />
 
-        <label>Выберите наименование товара: </label>
-        <AutoComplete v-model="selectedMaterial_Name" :suggestions="filteredMaterial_Name" dropdown optionLabel="Name"
-          forceSelection @complete="searchMaterial_Name($event)">
-        </AutoComplete>
-        <Divider />
+        <div class="mb-4">
+          <label class="block text-xs font-black text-slate-400 mb-2">НАИМЕНОВАНИЕ ТОВАРА</label>
+          <AutoComplete v-model="selectedMaterial_Name" :suggestions="filteredMaterial_Name" dropdown optionLabel="Name"
+            forceSelection @complete="searchMaterial_Name($event)" class="w-full">
+          </AutoComplete>
+        </div>
 
-        <label>Ед.измерения: </label>
-        <AutoComplete v-model="selectedMeasure_Name" :suggestions="filteredMeasure_Name" dropdown optionLabel="Name"
-          forceSelection @complete="searchMeasure_Name($event)">
-        </AutoComplete>
-        <Divider />
+        <div class="mb-4">
+          <label class="block text-xs font-black text-slate-400 mb-2">ЕД. ИЗМЕРЕНИЯ</label>
+          <AutoComplete v-model="selectedMeasure_Name" :suggestions="filteredMeasure_Name" dropdown optionLabel="Name"
+            forceSelection @complete="searchMeasure_Name($event)" class="w-full">
+          </AutoComplete>
+        </div>
 
-        <label>Стоимость: </label>
-        <InputNumber id="newAdPrice" v-model="newAd.Price" mode="decimal" :minFractionDigits="2" />
-        <label> рублей</label>
-        <Divider />
+        <div class="mb-4">
+          <label class="block text-xs font-black text-slate-400 mb-2">СТОИМОСТЬ (РУБЛИ)</label>
+          <InputNumber id="newAdPrice" v-model="newAd.Price" mode="decimal" :minFractionDigits="2" class="w-full" />
+        </div>
 
-        <label>Описание товара: </label>
-        <p />
-        <Textarea id="newAdDescription" v-model="newAd.Description" :autoResize="true" rows="6" cols="50" />
-        <Divider />
+        <div class="mb-4">
+          <label class="block text-xs font-black text-slate-400 mb-2">ОПИСАНИЕ ТОВАРА</label>
+          <Textarea id="newAdDescription" v-model="newAd.Description" :autoResize="true" rows="4" class="w-full" />
+        </div>
 
-        <FileUpload mode="basic" name="demo[]" :customUpload="true" :auto="true" :maxFileSize="10000000"
-          chooseLabel="Выбрать главное фото товара" @uploader="myUploaderNewAd" />
-        <p>-</p>
-        <Image v-if="newAdImageUrl" :src="newAdImageUrl" alt="Фото товара" width="30%" height="30%" />
+        <div class="mb-4">
+          <label class="block text-xs font-black text-slate-400 mb-2">ГЛАВНОЕ ФОТО</label>
+          <FileUpload mode="basic" name="demo[]" :customUpload="true" :auto="true" :maxFileSize="10000000"
+            chooseLabel="Выбрать главное фото товара" @uploader="myUploaderNewAd" class="w-full" />
+          <div v-if="newAdImageUrl" class="mt-4 flex justify-center">
+            <Image :src="newAdImageUrl" alt="Фото товара" width="120" class="rounded-xl border border-slate-200" />
+          </div>
+        </div>
       </div>
 
       <template #footer>
-        <Button label="Назад" class="p-button-text" @click="backToCategoryStep" />
-        <Button label="Опубликовать" icon="pi pi-check" class="p-button-success" @click="submitNewAd"
-          :loading="creatingAdLoading" :disabled="!selectedMaterial_Name || !selectedMeasure_Name" />
+        <div class="flex gap-3 justify-end w-full">
+          <Button label="Назад" class="p-button-text" @click="backToCategoryStep" />
+          <Button label="Опубликовать" icon="pi pi-check" class="p-button-success btn-neon px-6 py-2 rounded-xl" @click="submitNewAd"
+            :loading="creatingAdLoading" :disabled="!selectedMaterial_Name || !selectedMeasure_Name" />
+        </div>
       </template>
     </Dialog>
 
-    <!-- Просто справочный список категорий -->
-    <Dialog v-model:visible="visibleCategoriesBrowse" modal header="Категории" :style="{ width: '20%' }">
-      <div align="center">
-        <DataTable :value="categories" v-model:selection="selectedCategories" dataKey="id" size="small">
-          <Column field="Name" sortable>
-            <template #body="{ data }">
-              <Button :label="data.Name" class="p-button-link" @click="filterCategories(data.Name)" />
-            </template>
-          </Column>
-        </DataTable>
-      </div>
-    </Dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useToast } from 'primevue/usetoast';
-const toast = useToast();
-const visible = ref(false);
-const visibleCategories = ref(false);
-const visibleCategoriesBrowse = ref(false);
-import { guestReg } from '~/utils';
-const runtimeConfig = useRuntimeConfig();
-await guestReg(runtimeConfig.public.ORG);
-const dadataToken = runtimeConfig.public.dadataToken || null;
-const businessFormName: any = runtimeConfig.public.businessFormName;
-const Token = localStorage.getItem('Token') || '';
+import { ref, unref, toRaw, computed, watch } from 'vue'
+import { useToast } from 'primevue/usetoast'
+import { guestReg } from '~/utils'
 
-const reg = async () => { navigateTo('/reg?type=seller'); }
-const enterSeller = async () => {
-  if (checkIsGuest()) navigateTo('/auth');
-  else navigateTo('/modules/dictionary/PersonalCabinetSeller');
-}
-const enterShowFormProduct = async () => {
-  //TODO: отфильтровать товары
-}
-const enterShowFormService = async () => {
-  //TODO: отфильтровать сервисы
-}
+const toast = useToast()
+const runtimeConfig = useRuntimeConfig()
 
-const FilteredCard: any = ref([]);
-const EntityFilteredCard: any = ref([]);
-const TextToFilter = ref('');
-let CardEntity: any = [];
+// Initialize Guest Session
+await guestReg(runtimeConfig.public.ORG)
 
-const fillEntity = async () => {
-  const { Entity = [] } = await post({
-    module: 'shop',
-    form: 'ShowCatalog',
-    method: 'getCatalog',
-    data: { DocMovement: {} },
-    Token,
-  });
-  CardEntity = [];
-  CardEntity.push(...Entity);
-  FilteredCard.value = [];
-  for (const { id, Material_Name, Description, FileStorage_id, org, Price, Level = 0, inFavorit, Service_Name, typeOfSale, Analytics } of CardEntity) {
-    const nameValue = Material_Name || Service_Name || '';
-    FilteredCard.value.push({ id, Name: nameValue, Description, Price, imageUrl: getImageUrl(FileStorage_id, org), Level: Number(Level), inFavorit, typeOfSale, Analytics });
-    EntityFilteredCard.value.push({ id, Name: nameValue, Description, Price, imageUrl: getImageUrl(FileStorage_id, org), Level: Number(Level), inFavorit, typeOfSale, Analytics });
-  }
-}
-fillEntity();
+const dadataToken = runtimeConfig.public.dadataToken || null
+const businessFormName: any = runtimeConfig.public.businessFormName
+const Token = localStorage.getItem('Token') || ''
 
-const clearFilters = () => {
-  TextToFilter.value = '';
-  fillEntity();
-}
+// Geolocation object (Dinar's tracking coordinates)
+const location: any = {}
 
-const filterFilteredCard = () => {
-  if (!TextToFilter.value) {
-    clearFilters();
-    return;
-  }
-  FilteredCard.value = [];
-  for (const row of EntityFilteredCard.value) {
-    let { Name = '', Description = '', imageUrl } = row;
-    Name = Name || '';
-    Description = Description || '';
-    if ((Name.toLowerCase()).includes(unref(TextToFilter).toLowerCase())) {
-      FilteredCard.value.push(row);
-    } else if ((Description.toLowerCase()).includes(unref(TextToFilter).toLowerCase())) {
-      FilteredCard.value.push(row);
-    }
-  };
-}
+// Composable global states
+const {
+  showCatalog,
+  showCity,
+  showReg,
+  showLogin,
+  showAbout,
+  showOrder,
+  showSupport,
+  selectedCategory,
+  selectedProduct,
+  selectedPromo,
+  currentCity
+} = useComboState()
 
-const getCardNameDictionary = async () => {
-  const { Entity = [] } = await post({
-    module: 'shop',
-    form: 'ShowCatalog',
-    method: 'getCardNameDictionary',
-    data: { DocMovement: {} },
-    Token,
-  });
-  return Entity
-}
-
-const cardNameDictionary: any = await getCardNameDictionary();
-
-const filteredText = ref();
-const searchTextToFilter = async ({ query = '' }) => {
-  setTimeout(() => {
-    if (!query.trim().length) {
-      filteredText.value = cardNameDictionary;
-    } else {
-      filteredText.value = cardNameDictionary.filter(({ Name }: any) => {
-        return !!Name?.toLowerCase().includes(query?.toLowerCase());
-      });
-    }
-  }, 250);
-}
-
-const checkIsGuest = (): boolean => {
-  if (localStorage.getItem('isGuest') === 'true') {
-    visible.value = true;
-    return true;
-  }
-  return false
-}
-
-const clickFeedBack = (data: any) => {
-  if (checkIsGuest()) return;
-  const { Analytics, typeOfSale } = toRaw(data);
-  let url = `/modules/feedback/FeedBackDoc?Analytics=` + Analytics + `&typeOfSale=` + typeOfSale;
-  return navigateTo(url);
-}
-
-const clickAddToFavorite = async (data: any) => {
-  if (checkIsGuest()) return;
-  const { id, typeOfSale } = toRaw(data);
-  const DocMovement: any = {}
-  if (typeOfSale === "Service") DocMovement.ServiceCard_id = id;
-  else DocMovement.ProductCard_id = id;
-
-  const response: any = await post({
-    Token: localStorage.getItem('Token') || '',
-    module: "shop",
-    form: "FavoritesDoc",
-    data: { DocMovement }
-  });
-  if (response?.Error) {
-    toast.add({ severity: 'error', summary: response.Error, life: 3000 });
-  }
-  else {
-    FilteredCard.value = FilteredCard.value.map((item: any) =>
-      item.id === id ? { ...item, inFavorit: true } : item);
-  }
-}
-
-const location: any = {};
-
+// Geolocation with Dadata Fallback integration
 const getGeoposition = () => {
   function handleError(error: any) {
     switch (error.code) {
       case error.PERMISSION_DENIED:
-        alert('You denied the request for Geolocation.');
+        toast.add({ severity: 'warn', summary: 'Доступ к геопозиции отклонен.', life: 3000 })
         break;
-      case error.POSITION_UNAVAILABLE:
-        alert('Location information is unavailable.');
-        break;
-      case error.TIMEOUT:
-        alert('The request to get your location timed out.');
-        break;
-      case error.UNKNOWN_ERROR:
       default:
-        alert('An unknown error occurred while retrieving location.');
+        toast.add({ severity: 'error', summary: 'Ошибка при получении геопозиции.', life: 3000 })
         break;
     }
   }
+
   navigator.geolocation.getCurrentPosition(
     (pos) => {
       location.latitude = pos.coords.latitude;
@@ -289,11 +298,10 @@ const getGeoposition = () => {
       location.accuracy = pos.coords.accuracy;
 
       const url = "https://suggestions.dadata.ru/suggestions/api/4_1/rs/geolocate/address";
-      const query = { lat: location.latitude, lon: location.longitude };
-
-      const options: any = {
+      const query = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+      const options = {
         method: "POST",
-        mode: "cors",
+        mode: "cors" as RequestMode,
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
@@ -303,59 +311,231 @@ const getGeoposition = () => {
       }
 
       fetch(url, options)
-        .then(response => response.json())
+        .then(res => res.json())
         .then(result => {
-          const city = result.suggestions[0].data.city;
-          toast.add({ severity: 'info', summary: 'Ваш город: ' + city, life: 3000 });
+          if (result?.suggestions && result.suggestions.length > 0) {
+            const city = result.suggestions[0].data.city;
+            currentCity.value = city.toUpperCase()
+            toast.add({ severity: 'info', summary: 'Ваш город определен: ' + city, life: 3000 })
+          }
         })
-        .catch(error => console.log("error", error));
+        .catch(err => console.log("Geoposition lookup error", err));
     },
     handleError,
     { timeout: 10000 }
   );
 }
 
-const categories: any = ref([]);
-const selectedCategories: any = ref([]);
-const response: any = await post({
+// Bind default layouts triggers to this component
+const triggerCitySelector = () => {
+  getGeoposition()
+}
+
+// Map helper categories icons dynamically
+const getIconForCategory = (catName: string, index: number): string => {
+  const name = catName.toLowerCase()
+  if (name.includes('ремонт') || name.includes('строй')) return 'repair'
+  if (name.includes('транспорт') || name.includes('перевоз')) return 'transport'
+  if (name.includes('авто')) return 'autoservice'
+  if (name.includes('it') || name.includes('информа') || name.includes('разраб')) return 'it'
+  if (name.includes('делов') || name.includes('юрист') || name.includes('бухг')) return 'business'
+  if (name.includes('техн') || name.includes('электр')) return 'tech'
+  if (name.includes('обуч') || name.includes('курс')) return 'education'
+
+  const fallbackIcons = ['repair', 'transport', 'autoservice', 'it', 'business', 'tech', 'education']
+  return fallbackIcons[index % fallbackIcons.length]
+}
+
+// Guest Checking
+const guestAlertVisible = ref(false)
+const checkIsGuest = (): boolean => {
+  if (localStorage.getItem('isGuest') === 'true') {
+    guestAlertVisible.value = true
+    return true
+  }
+  return false
+}
+
+const navigateToAuth = () => {
+  guestAlertVisible.value = false
+  navigateTo('/auth')
+}
+
+// Quick Categories Mock
+const quickCategories = ["Недвижимость", "Авто", "Транспорт", "Работа", "Электроника", "Одежда", "Хобби", "Для дома", "Животные", "Здоровье"]
+
+// VIP Mock cards
+const promoCards = [
+  { id: 1, title: "Ремонт домов", img: "https://images.unsplash.com/photo-1503387762-592dea58ef21?auto=format&fit=crop&w=500" },
+  { id: 2, title: "Автосервис", img: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?auto=format&fit=crop&w=500" },
+  { id: 3, title: "IT Решения", img: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=500" },
+  { id: 4, title: "Клининг", img: "https://images.unsplash.com/photo-1527515545081-5db817172677?auto=format&fit=crop&w=500" },
+  { id: 5, title: "Логистика", img: "https://images.unsplash.com/photo-1586769852836-bc069f19e1b6?auto=format&fit=crop&w=500" }
+]
+
+// API Data fetching
+const FilteredCard: any = ref([])
+const EntityFilteredCard: any = ref([])
+const TextToFilter = ref('')
+let CardEntity: any = []
+
+const fillEntity = async () => {
+  const { Entity = [] } = await post({
+    module: 'shop',
+    form: 'ShowCatalog',
+    method: 'getCatalog',
+    data: { DocMovement: {} },
+    Token,
+  })
+  CardEntity = []
+  CardEntity.push(...Entity)
+  FilteredCard.value = []
+  EntityFilteredCard.value = []
+  for (const { id, Material_Name, Description, FileStorage_id, org, Price, Level = 0, inFavorit, Service_Name, typeOfSale, Analytics } of CardEntity) {
+    const nameValue = Material_Name || Service_Name || ''
+    const cardData = {
+      id,
+      Name: nameValue,
+      Description,
+      Price,
+      imageUrl: getImageUrl(FileStorage_id, org),
+      Level: Number(Level),
+      inFavorit,
+      typeOfSale,
+      Analytics
+    }
+    FilteredCard.value.push(cardData)
+    EntityFilteredCard.value.push(cardData)
+  }
+}
+fillEntity()
+
+// Search filters
+const isFiltered = computed(() => TextToFilter.value && TextToFilter.value.trim() !== '')
+
+const clearFilters = () => {
+  TextToFilter.value = ''
+  fillEntity()
+}
+
+const filterFilteredCard = () => {
+  const query = unref(TextToFilter);
+  if (!query) {
+    clearFilters()
+    return
+  }
+
+  // Handle autocomplete object vs direct string input
+  const queryString = (typeof query === 'object' && query !== null && 'Name' in query) 
+    ? (query as any).Name 
+    : String(query);
+
+  FilteredCard.value = []
+  for (const row of EntityFilteredCard.value) {
+    let { Name = '', Description = '' } = row
+    Name = Name || ''
+    Description = Description || ''
+    if (Name.toLowerCase().includes(queryString.toLowerCase())) {
+      FilteredCard.value.push(row)
+    } else if (Description.toLowerCase().includes(queryString.toLowerCase())) {
+      FilteredCard.value.push(row)
+    }
+  }
+}
+
+const quickSelect = (catName: string) => {
+  TextToFilter.value = catName
+  filterFilteredCard()
+}
+
+// Autocomplete suggestions
+const getCardNameDictionary = async () => {
+  const { Entity = [] } = await post({
+    module: 'shop',
+    form: 'ShowCatalog',
+    method: 'getCardNameDictionary',
+    data: { DocMovement: {} },
+    Token,
+  })
+  return Entity
+}
+
+const cardNameDictionary: any = await getCardNameDictionary()
+const filteredText = ref()
+
+const searchTextToFilter = async ({ query = '' }) => {
+  setTimeout(() => {
+    if (!query.trim().length) {
+      filteredText.value = cardNameDictionary
+    } else {
+      filteredText.value = cardNameDictionary.filter(({ Name }: any) => {
+        return !!Name?.toLowerCase().includes(query?.toLowerCase())
+      })
+    }
+  }, 250)
+}
+
+// Favorites & Interactions
+const clickAddToFavorite = async (data: any) => {
+  if (checkIsGuest()) return
+  const { id, typeOfSale } = toRaw(data)
+  const DocMovement: any = {}
+  if (typeOfSale === "Service") DocMovement.ServiceCard_id = id
+  else DocMovement.ProductCard_id = id
+
+  const response: any = await post({
+    Token: localStorage.getItem('Token') || '',
+    module: "shop",
+    form: "FavoritesDoc",
+    data: { DocMovement }
+  })
+  if (response?.Error) {
+    toast.add({ severity: 'error', summary: response.Error, life: 3000 })
+  } else {
+    toast.add({ severity: 'success', summary: 'Успешно добавлено в избранное!', life: 2000 })
+    FilteredCard.value = FilteredCard.value.map((item: any) =>
+      item.id === id ? { ...item, inFavorit: true } : item)
+  }
+}
+
+// Categories layer
+const categories: any = ref([])
+const categoriesResponse: any = await post({
   Token: localStorage.getItem('Token') || '',
   module: 'business',
   form: businessFormName,
   method: 'getCategoriesFirstLayer',
   data: { DocMovement: {} }
 })
-categories.value = response?.Entity || [];
+categories.value = categoriesResponse?.Entity || []
 
-const showCategories = () => { visibleCategoriesBrowse.value = true; }
-
-const filterCategories = (category: string) => {
-  visibleCategories.value = false;
-  visibleCategoriesBrowse.value = false;
-
-  if (!category) {
-    FilteredCard.value = [...EntityFilteredCard.value];
-    return;
-  }
-
-  FilteredCard.value = EntityFilteredCard.value.filter((row: any) => {
-    const rowCategory = row.CategoryName || row.Category || '';
-    return rowCategory.toLowerCase() === category.toLowerCase();
-  });
-
-  if (FilteredCard.value.length === 0) {
-    toast.add({ severity: 'info', summary: `В категории «${category}» пока нет объявлений`, life: 3000 });
-  }
+const filterCategories = (categoryName: string) => {
+  TextToFilter.value = categoryName
+  filterFilteredCard()
 }
 
-// --- Справочники для словарных полей (перенесено со страницы редактирования) ---
+const clickShowCard = (data: any) => {
+  selectedProduct.value = null // Close detail modal
+  const { id, typeOfSale } = toRaw(data)
+  let form = 'ShowProductCard'
+  if (typeOfSale === "Service") form = 'ShowServiceCard'
+  linkToForm({ module: 'shop', form, id })
+}
+
+const enterCardReestr = () => {
+  if (checkIsGuest()) return
+  return navigateTo('/modules/shop/CardReestr')
+}
+
+// --- Dinar's Dictionaries for Form AutoCompletes ---
 const MeasureResponse: any = await get({
   Token,
   module: 'dictionary',
   form: 'MeasureDoc',
   id: 0
-});
+})
 if (MeasureResponse.Error) {
-  toast.add({ severity: 'error', summary: MeasureResponse.Error, life: 3000 });
+  toast.add({ severity: 'error', summary: MeasureResponse.Error, life: 3000 })
 }
 
 const MaterialResponse: any = await get({
@@ -363,71 +543,70 @@ const MaterialResponse: any = await get({
   module: 'dictionary',
   form: 'MaterialDoc',
   id: 0
-});
+})
 if (MaterialResponse.Error) {
-  toast.add({ severity: 'error', summary: MaterialResponse.Error, life: 3000 });
+  toast.add({ severity: 'error', summary: MaterialResponse.Error, life: 3000 })
 }
 
-const filteredMaterial_Name = ref();
-const selectedMaterial_Name = ref();
+const filteredMaterial_Name = ref()
+const selectedMaterial_Name = ref()
 const searchMaterial_Name = async ({ query = '' }) => {
   setTimeout(() => {
     if (!query.trim().length) {
-      filteredMaterial_Name.value = [...toRaw(MaterialResponse.Entity)];
+      filteredMaterial_Name.value = [...toRaw(MaterialResponse.Entity)]
     } else {
       filteredMaterial_Name.value = toRaw(MaterialResponse.Entity).filter(({ Name = '' }: any) => {
-        return !!Name?.toLowerCase().includes(query?.toLowerCase());
-      });
+        return !!Name?.toLowerCase().includes(query?.toLowerCase())
+      })
     }
-  }, 250);
+  }, 250)
 }
 
-const filteredMeasure_Name = ref();
-const selectedMeasure_Name = ref();
+const filteredMeasure_Name = ref()
+const selectedMeasure_Name = ref()
 const searchMeasure_Name = async ({ query = '' }) => {
   setTimeout(() => {
     if (!query.trim().length) {
-      filteredMeasure_Name.value = [...toRaw(MeasureResponse.Entity)];
+      filteredMeasure_Name.value = [...toRaw(MeasureResponse.Entity)]
     } else {
       filteredMeasure_Name.value = toRaw(MeasureResponse.Entity).filter(({ Name = '' }: any) => {
-        return !!Name?.toLowerCase().includes(query?.toLowerCase());
-      });
+        return !!Name?.toLowerCase().includes(query?.toLowerCase())
+      })
     }
-  }, 250);
+  }, 250)
 }
 
-// --- Флоу "Разместить объявление" ---
-const selectedCategory: any = ref(null);
-const visibleCreateCard = ref(false);
-const creatingAdLoading = ref(false);
-const newAd = ref({ Description: '', Price: null });
-const newAdImageUrl = ref('');
-const newAdFileStorage_id = ref(null);
+// --- Post Ad Flow States & Handlers (from Dinar's code) ---
+const visibleCategories = ref(false)
+const visibleCreateCard = ref(false)
+const creatingAdLoading = ref(false)
+const newAd = ref({ Description: '', Price: null })
+const newAdImageUrl = ref('')
+const newAdFileStorage_id = ref(null)
 
 const clickPostAd = () => {
-  if (checkIsGuest()) return;
-  visibleCategories.value = true;
+  if (checkIsGuest()) return
+  visibleCategories.value = true
 }
 
 const selectCategoryForAd = (cat: any) => {
-  selectedCategory.value = cat;
-  visibleCategories.value = false;
-  newAd.value = { Description: '', Price: null };
-  selectedMaterial_Name.value = null;
-  selectedMeasure_Name.value = null;
-  newAdImageUrl.value = '';
-  newAdFileStorage_id.value = null;
-  visibleCreateCard.value = true;
+  selectedCategory.value = cat
+  visibleCategories.value = false
+  newAd.value = { Description: '', Price: null }
+  selectedMaterial_Name.value = null
+  selectedMeasure_Name.value = null
+  newAdImageUrl.value = ''
+  newAdFileStorage_id.value = null
+  visibleCreateCard.value = true
 }
 
 const backToCategoryStep = () => {
-  visibleCreateCard.value = false;
-  visibleCategories.value = true;
+  visibleCreateCard.value = false
+  visibleCategories.value = true
 }
 
-// Главное фото для новой карточки — заливается сразу, id карточки подставится после создания
 const myUploaderNewAd = async (event: any) => {
-  const fileName = event.files[0].name;
+  const fileName = event.files[0].name
   const entityRow = await uploadFileStorage(event, {
     module: 'shop',
     form: 'ProductCardDoc',
@@ -437,24 +616,24 @@ const myUploaderNewAd = async (event: any) => {
         Date: new Date()
       }
     }
-  }, toast);
+  }, toast)
   if (entityRow.DocData) {
-    newAdFileStorage_id.value = entityRow.DocData.FileStorage_id;
-    newAdImageUrl.value = getImageUrl(entityRow.DocData.FileStorage_id, entityRow.DocData.org);
+    newAdFileStorage_id.value = entityRow.DocData.FileStorage_id
+    newAdImageUrl.value = getImageUrl(entityRow.DocData.FileStorage_id, entityRow.DocData.org)
   }
 }
 
 const submitNewAd = async () => {
   if (!selectedMaterial_Name.value) {
-    toast.add({ severity: 'error', summary: "Поле 'Товар' не заполнено", life: 3000 });
-    return;
+    toast.add({ severity: 'error', summary: "Поле 'Товар' не заполнено", life: 3000 })
+    return
   }
   if (!selectedMeasure_Name.value) {
-    toast.add({ severity: 'error', summary: "Поле 'Ед.измерения' не заполнено", life: 3000 });
-    return;
+    toast.add({ severity: 'error', summary: "Поле 'Ед.измерения' не заполнено", life: 3000 })
+    return
   }
 
-  creatingAdLoading.value = true;
+  creatingAdLoading.value = true
   try {
     const body = {
       Token,
@@ -474,194 +653,88 @@ const submitNewAd = async () => {
           DictionaryType: 'food',
         },
       },
-    };
-    const answer: any = await post(body);
-    if (answer.Error) {
-      toast.add({ severity: 'error', summary: answer.Error, life: 3000 });
-      return;
     }
-    visibleCreateCard.value = false;
-    toast.add({ severity: 'success', summary: 'Карточка создана как черновик', life: 3000 });
-    fillEntity();
+    const answer: any = await post(body)
+    if (answer.Error) {
+      toast.add({ severity: 'error', summary: answer.Error, life: 3000 })
+      return
+    }
+    visibleCreateCard.value = false
+    toast.add({ severity: 'success', summary: 'Карточка создана как черновик', life: 3000 })
+    fillEntity()
   } catch (e) {
-    console.error('submitNewAd error:', e);
-    toast.add({ severity: 'error', summary: 'Непредвиденная ошибка', life: 3000 });
+    console.error('submitNewAd error:', e)
+    toast.add({ severity: 'error', summary: 'Непредвиденная ошибка', life: 3000 })
   } finally {
-    creatingAdLoading.value = false;
+    creatingAdLoading.value = false
   }
 }
 
-const enterFavoriteDoc = () => {
-  if (checkIsGuest()) return;
-  return navigateTo('/modules/shop/Favorites');
+const showSupportModal = () => {
+  showSupport.value = true
 }
 
-const enterCardReestr = () => {
-  if (checkIsGuest()) return;
-  return navigateTo('/modules/shop/CardReestr');
-}
+// Watchers or updates to hook default layout handlers
+watch(showCity, (newVal) => {
+  if (newVal) {
+    showCity.value = false // bypass dialog, use geolocation
+    getGeoposition()
+  }
+})
+
+watch(showReg, (newVal) => {
+  if (newVal) {
+    showReg.value = false
+    navigateTo('/reg')
+  }
+})
+
+watch(showLogin, (newVal) => {
+  if (newVal) {
+    showLogin.value = false
+    navigateTo('/auth')
+  }
+})
 </script>
 
-<style>
-@import 'primeicons/primeicons.css';
-
-.products-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px 20px;
+<style scoped>
+/* Scoped premium shadows & shapes */
+.promo-card {
+  height: 320px;
+  border-radius: 30px;
+  overflow: hidden;
+  position: relative;
+  background-color: #2D3419;
+  transition: transform 0.4s;
+}
+.promo-card:hover {
+  transform: scale(1.02);
 }
 
-.km-header {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  flex-wrap: wrap;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #ececec;
-  margin-bottom: 20px;
-}
-
-.km-logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.km-logo-img img {
-  width: 46px;
-  height: 46px;
-  border-radius: 10px;
-  object-fit: cover;
-}
-
-.km-logo-text h1 {
-  font-size: 20px;
-  font-weight: 700;
-  margin: 0;
-  letter-spacing: 0.5px;
-}
-
-.km-logo-text p {
-  font-size: 10px;
-  color: #888;
-  margin: 0;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
-
-.km-search {
-  flex: 1;
-  min-width: 260px;
-  display: flex;
-  gap: 8px;
-}
-
-.km-search .p-autocomplete {
-  flex: 1;
-}
-
-.km-find-btn {
-  background: #d4f000 !important;
-  border: none !important;
-  color: #1a1a05 !important;
-  font-weight: 700 !important;
-  white-space: nowrap;
-}
-
-.km-nav {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.km-pill {
-  border-radius: 999px !important;
-  font-size: 13px !important;
-  background: #fff !important;
-  border: 1px solid #ddd !important;
-  color: #1a1a1a !important;
-}
-
-.km-pill--icon {
-  width: 40px;
-  padding: 0 !important;
-}
-
-.km-row {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 28px;
-  flex-wrap: wrap;
-  align-items: stretch;
-}
-
-.km-post-btn {
-  background: #d4f000 !important;
-  border: none !important;
-  color: #1a1a05 !important;
-  font-weight: 700 !important;
-  border-radius: 16px !important;
-  padding: 18px 22px !important;
-  min-width: 200px;
-}
-
-.km-support {
-  background: #fff;
-  border: 1px solid #ececec;
-  border-radius: 16px;
-  padding: 14px 20px;
-  font-size: 13px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
-}
-
-.km-cats {
-  flex: 1;
-  min-width: 260px;
-  background: #fff;
-  border: 1px solid #ececec;
-  border-radius: 16px;
-  padding: 16px 24px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px 24px;
-}
-
-.km-cat {
-  font-size: 12px;
-  font-weight: 700;
-  color: #1a1a1a;
+.category-card {
+  transition: all 0.3s;
   cursor: pointer;
-  background: none;
-  border: none;
-  text-align: left;
-  padding: 0;
+}
+.category-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.05);
 }
 
-.km-cat:hover {
-  color: #6b7a00;
+.standard-card {
+  border-radius: 20px;
+  background: white;
+  border: 1px solid #eef2e6;
+  overflow: hidden;
+  transition: all 0.3s;
+  cursor: pointer;
+  position: relative;
+}
+.standard-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
 }
 
-.km-section-title {
-  font-size: 18px;
-  margin-bottom: 12px;
-}
-
-.km-type-row {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 24px;
-}
-
-.product-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-}
-
+/* Стили для диалога категорий */
 .cat-dialog-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -676,6 +749,7 @@ const enterCardReestr = () => {
   background: #fafafa;
   cursor: pointer;
   font-size: 14px;
+  transition: all 0.2s;
 }
 
 .cat-dialog-item:hover {

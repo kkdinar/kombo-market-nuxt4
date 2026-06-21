@@ -1,20 +1,21 @@
-@import 'primeicons/primeicons.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-.fixed {
-  position: sticky;
-  /*позицианируем чтобы исчез скролл*/
-  width: 100%;
-  /*что бы верстка не складывалась по ширине*/
-  top: 0px;
-  z-index: 99999999;
-  /*поверх всех элементов*/
+body {
+  font-family: 'Montserrat', sans-serif;
+  background-color: #fcfdf7;
+  color: #2D3419;
+  overflow-x: hidden;
 }
 
-.products-page {
-  max-width: 1300px;
-  /* width: 100%; */
-  margin: 0 auto;
-  padding: 20px;
+/* Custom transitions and utility styles from the prototype */
+.btn-neon {
+  background-color: #DFFF00;
+  color: #2D3419;
+  font-weight: 900;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 20px rgba(223, 255, 0, 0.4);
 }
 
 .product-grid {
@@ -62,9 +63,143 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
-.table {
-  /* width: 1450px; */
-  max-width: 1300px;
-  border-collapse: collapse;
-  /* margin-bottom: 20px; */
+.btn-neon:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 30px rgba(223, 255, 0, 0.3);
+}
+
+.nav-btn {
+  background-color: white;
+  border: 2px solid #4A5D23;
+  color: #2D3419;
+  font-weight: 700;
+  padding: 8px 18px;
+  border-radius: 14px;
+  font-size: 13px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.nav-btn:hover {
+  background-color: #4A5D23;
+  color: white;
+}
+
+.promo-card {
+  height: 320px;
+  border-radius: 30px;
+  overflow: hidden;
+  position: relative;
+  background-color: #2D3419;
+  transition: transform 0.4s;
+}
+.promo-card:hover {
+  transform: scale(1.02);
+}
+
+.category-card {
+  transition: all 0.3s;
+  cursor: pointer;
+}
+.category-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+}
+
+.standard-card {
+  border-radius: 20px;
+  background: white;
+  border: 1px solid #eef2e6;
+  overflow: hidden;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+.standard-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+}
+
+/* INPUT STYLES */
+input, textarea, select {
+  border: 2px solid #f1f5f9 !important;
+  border-radius: 16px !important;
+  padding: 12px 20px !important;
+  outline: none !important;
+  font-weight: 600 !important;
+  width: 100%;
+  transition: border-color 0.2s;
+  color: #2D3419;
+}
+input:focus, textarea:focus, select:focus {
+  border-color: #DFFF00 !important;
+}
+
+/* PRIMEVUE DIALOG OVERRIDES */
+.p-dialog-mask {
+  background-color: rgba(15, 23, 42, 0.8) !important;
+  backdrop-filter: blur(10px) !important;
+  z-index: 1000 !important;
+}
+
+.p-dialog {
+  border-radius: 3rem !important;
+  background-color: white !important;
+  border: 1px solid #eef2e6 !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  color: #2D3419 !important;
+  overflow: hidden;
+}
+
+.p-dialog-header {
+  border-top-left-radius: 3rem !important;
+  border-top-right-radius: 3rem !important;
+  background-color: white !important;
+  padding: 2.5rem 2.5rem 1rem 2.5rem !important;
+}
+
+.p-dialog-content {
+  border-bottom-left-radius: 3rem !important;
+  border-bottom-right-radius: 3rem !important;
+  background-color: white !important;
+  padding: 1rem 2.5rem 2.5rem 2.5rem !important;
+}
+
+/* Dark dialog style for catalog and about */
+.p-dialog.dark-dialog {
+  background-color: #2D3419 !important;
+  color: white !important;
+  border: 4px solid #DFFF00 !important;
+}
+.p-dialog.dark-dialog .p-dialog-header,
+.p-dialog.dark-dialog .p-dialog-content {
+  background-color: #2D3419 !important;
+  color: white !important;
+}
+
+/* Hide PrimeVue default close icon for custom styling if needed, or style it */
+.p-dialog-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.p-dialog-close-button {
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+  border-radius: 50% !important;
+  background-color: #f1f5f9 !important;
+  border: none !important;
+  color: #2D3419 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: transform 0.2s !important;
+}
+.p-dialog-close-button:hover {
+  transform: rotate(90deg);
+  background-color: #e2e8f0 !important;
+}
+
+/* Dark Dialog close button */
+.p-dialog.dark-dialog .p-dialog-close-button {
+  background-color: #DFFF00 !important;
+  color: #2D3419 !important;
 }
