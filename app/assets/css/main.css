@@ -1,0 +1,55 @@
+@import 'primeicons/primeicons.css';
+
+.fixed {
+  position: sticky;
+  /*позицианируем чтобы исчез скролл*/
+  width: 100%;
+  /*что бы верстка не складывалась по ширине*/
+  top: 0px;
+  z-index: 99999999;
+  /*поверх всех элементов*/
+}
+
+.products-page {
+  max-width: 1300px;
+  /* width: 100%; */
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.product-grid {
+  /* display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px; */
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 колонки равной ширины */
+  gap: 10px;
+  /* border-radius: 8px; /* радиус скругления 8 пикселей */
+  /* box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); */
+  /* object-fit: cover; */
+  /* margin-bottom: 10px; */
+  /* grid-auto-flow: column; */
+}
+
+.product-card-mini {
+  /* width: 180px;
+  padding: 15px; */
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  /* text-align: center; */
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* тень для карточки */
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.product-card-mini:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2); /* увеличенная тень при наведении */
+}
+
+.table {
+  /* width: 1450px; */
+  max-width: 1300px;
+  border-collapse: collapse;
+  /* margin-bottom: 20px; */
+}
