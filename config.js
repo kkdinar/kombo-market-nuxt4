@@ -1,5 +1,5 @@
-module.exports.baseURL = 'http://localhost:3002';
-// module.exports.baseURL = 'https://api.work-assistant.ru';
+// module.exports.baseURL = 'http://localhost:3002';
+module.exports.baseURL = 'https://api.work-assistant.ru';
 
 module.exports.ORG = 1;
 
