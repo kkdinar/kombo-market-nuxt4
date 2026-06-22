@@ -1,5 +1,4 @@
 import Aura from '@primeuix/themes/aura';
-import { baseURL, ORG, dadataToken, businessFormName } from "./config";
 
 export default defineNuxtConfig({
   ssr: false,
@@ -28,11 +27,11 @@ export default defineNuxtConfig({
     // The private keys which are only available server-side
     apiSecret: '123',
     public: {
-      baseURL,
-      ORG,
-      dadataToken,
+      baseURL: process.env.NUXT_PUBLIC_BASE_URL || '',
+      ORG: process.env.NUXT_PUBLIC_ORG || '',
+      dadataToken: process.env.NUXT_PUBLIC_DADATA_TOKEN || '',
       FORMNAMESREPLACE: [],
-      businessFormName
+      businessFormName: process.env.NUXT_PUBLIC_BUSINESS_FORM_NAME || ''
     }
   },
   app: {

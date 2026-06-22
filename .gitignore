@@ -1,4 +1,5 @@
-#config.js
+config.js
+config.ts
 uploads
 out
 log.txt
