@@ -175,63 +175,66 @@
       </div>
     </Dialog>
 
-    <!-- Шаг 1: выбор категории (кастомный дизайн v1.5.0) -->
-    <Transition name="fade">
-      <div v-if="visibleCategories" class="fixed inset-0 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md z-[1100]">
-        <div class="bg-white rounded-[3rem] w-full max-w-md shadow-2xl p-10 relative">
-          <button @click="visibleCategories = false" class="absolute top-6 right-8 text-4xl text-slate-300 hover:text-khaki-dark leading-none">&times;</button>
-          <h3 class="text-3xl font-black text-khaki-dark mb-8 uppercase">Выберите категорию</h3>
-          <div class="cat-dialog-grid">
-            <button v-for="cat in categories" :key="cat.id" class="cat-dialog-item font-bold" @click="selectCategoryForAd(cat)">
-              {{ cat.Name }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </Transition>
-
-    <!-- Шаг 2: основные поля карточки товара (кастомный дизайн v1.5.0) -->
+    <!-- Модалка: Создать объявление (восстановленный точный дизайн v1.5.0) -->
     <Transition name="fade">
       <div v-if="visibleCreateCard" class="fixed inset-0 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md z-[1100]">
-        <div class="bg-white rounded-[3rem] w-full max-w-lg shadow-2xl p-10 relative max-h-[90vh] overflow-y-auto pr-4">
+        <div class="bg-white rounded-[3rem] w-full max-w-2xl shadow-2xl p-12 overflow-y-auto max-h-[90vh] relative">
           <button @click="visibleCreateCard = false" class="absolute top-6 right-8 text-4xl text-slate-300 hover:text-khaki-dark leading-none">&times;</button>
-          <h3 class="text-3xl font-black text-khaki-dark mb-6 uppercase">Новое объявление</h3>
           
-          <div class="space-y-4">
-            <div class="selected-category-row flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-100">
-              <span class="text-sm font-bold text-khaki-dark">Категория:</span>
-              <div class="selected-category-chip px-3 py-1 bg-neon-lemon/20 text-khaki-dark border border-neon-lemon rounded-full text-xs font-bold flex items-center gap-2">
-                {{ selectedCategory?.Name }}
-                <button type="button" class="chip-change text-khaki-mid underline hover:text-khaki-dark" @click="backToCategoryStep">Изменить</button>
-              </div>
+          <h3 class="text-3xl font-black text-khaki-dark mb-8 uppercase">Создать объявление</h3>
+          
+          <div class="space-y-6">
+            <!-- 1. Поле для ввода: Что продаете или предлагаете -->
+            <div>
+              <AutoComplete 
+                v-model="selectedMaterial_Name" 
+                :suggestions="filteredMaterial_Name" 
+                optionLabel="Name"
+                @complete="searchMaterial_Name($event)"
+                placeholder="ЧТО ПРОДАЕТЕ ИЛИ ПРЕДЛАГАЕТЕ?"
+                class="w-full text-lg"
+              />
             </div>
 
+            <!-- 2. Поле: Выбор из каталога -->
             <div>
-              <label class="block text-xs font-black text-slate-400 mb-1">НАИМЕНОВАНИЕ ТОВАРА</label>
-              <AutoComplete v-model="selectedMaterial_Name" :suggestions="filteredMaterial_Name" dropdown optionLabel="Name"
-                forceSelection @complete="searchMaterial_Name($event)" class="w-full">
-              </AutoComplete>
+              <select v-model="selectedCategory" class="w-full font-bold text-khaki-dark border-2 border-slate-100 rounded-2xl px-5 py-3 outline-none focus:border-neon-lemon bg-white">
+                <option :value="null" disabled>Выбор из каталога</option>
+                <option v-for="cat in categories" :key="cat.id" :value="cat">
+                  {{ cat.Name }}
+                </option>
+              </select>
             </div>
 
+            <!-- 3. Поле подробного описания с возможностью его расширить (resize-y) -->
             <div>
-              <label class="block text-xs font-black text-slate-400 mb-1">ЕД. ИЗМЕРЕНИЯ</label>
-              <AutoComplete v-model="selectedMeasure_Name" :suggestions="filteredMeasure_Name" dropdown optionLabel="Name"
-                forceSelection @complete="searchMeasure_Name($event)" class="w-full">
-              </AutoComplete>
+              <textarea 
+                rows="4" 
+                v-model="newAd.Description" 
+                placeholder="ПОДРОБНОЕ ОПИСАНИЕ..." 
+                class="w-full border-2 border-slate-100 rounded-2xl px-5 py-3 outline-none focus:border-neon-lemon resize-y min-h-[120px] font-semibold text-khaki-dark"
+              ></textarea>
             </div>
 
-            <div>
-              <label class="block text-xs font-black text-slate-400 mb-1">СТОИМОСТЬ (РУБЛИ)</label>
-              <InputNumber id="newAdPrice" v-model="newAd.Price" mode="decimal" :minFractionDigits="2" class="w-full" />
+            <!-- 4. Два поля на одном уровне: цена и локация -->
+            <div class="grid grid-cols-2 gap-4">
+              <input 
+                type="text" 
+                v-model="newAd.Price" 
+                placeholder="ЦЕНА (₽)" 
+                class="w-full border-2 border-slate-100 rounded-2xl px-5 py-3 outline-none focus:border-neon-lemon font-semibold text-khaki-dark"
+              />
+              <input 
+                type="text" 
+                v-model="newAd.Location" 
+                placeholder="ЛОКАЦИЯ" 
+                class="w-full border-2 border-slate-100 rounded-2xl px-5 py-3 outline-none focus:border-neon-lemon font-semibold text-khaki-dark"
+              />
             </div>
 
-            <div>
-              <label class="block text-xs font-black text-slate-400 mb-1">ОПИСАНИЕ ТОВАРА</label>
-              <Textarea id="newAdDescription" v-model="newAd.Description" :autoResize="true" rows="3" class="w-full" />
-            </div>
-
-            <div>
-              <label class="block text-xs font-black text-slate-400 mb-1">ГЛАВНОЕ ФОТО</label>
+            <!-- Загрузка фото товара (адаптирована визуально) -->
+            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+              <label class="block text-xs font-black text-slate-400 mb-2 uppercase">Фото товара (необязательно)</label>
               <FileUpload mode="basic" name="demo[]" :customUpload="true" :auto="true" :maxFileSize="10000000"
                 chooseLabel="Выбрать фото" @uploader="myUploaderNewAd" class="w-full" />
               <div v-if="newAdImageUrl" class="mt-3 flex justify-center">
@@ -239,11 +242,15 @@
               </div>
             </div>
 
-            <div class="flex gap-3 justify-end pt-4 border-t border-slate-100">
-              <Button label="Назад" class="p-button-text hover:text-khaki-dark" @click="backToCategoryStep" />
-              <Button label="Опубликовать" icon="pi pi-check" class="btn-neon px-6 py-2 rounded-xl text-sm" @click="submitNewAd"
-                :loading="creatingAdLoading" :disabled="!selectedMaterial_Name || !selectedMeasure_Name" />
-            </div>
+            <!-- 5. Кнопка: Опубликовать -->
+            <button 
+              @click="submitNewAd" 
+              :disabled="creatingAdLoading"
+              class="btn-neon w-full py-6 rounded-[2rem] text-2xl uppercase mt-6 cursor-pointer flex items-center justify-center gap-2"
+            >
+              <span v-if="creatingAdLoading">Публикация...</span>
+              <span v-else>Опубликовать</span>
+            </button>
           </div>
         </div>
       </div>
@@ -607,33 +614,21 @@ const searchMeasure_Name = async ({ query = '' }) => {
   }, 250)
 }
 
-// --- Post Ad Flow States & Handlers (from Dinar's code) ---
-const visibleCategories = ref(false)
+// --- Post Ad Flow States & Handlers (from Dinar's code, simplified to v1.5.0 layout) ---
 const visibleCreateCard = ref(false)
 const creatingAdLoading = ref(false)
-const newAd = ref({ Description: '', Price: null })
+const newAd = ref({ Description: '', Price: null, Location: '' })
 const newAdImageUrl = ref('')
 const newAdFileStorage_id = ref(null)
 
 const clickPostAd = () => {
   if (checkIsGuest()) return
-  visibleCategories.value = true
-}
-
-const selectCategoryForAd = (cat: any) => {
-  selectedCategory.value = cat
-  visibleCategories.value = false
-  newAd.value = { Description: '', Price: null }
+  selectedCategory.value = null
   selectedMaterial_Name.value = null
-  selectedMeasure_Name.value = null
+  newAd.value = { Description: '', Price: null, Location: '' }
   newAdImageUrl.value = ''
   newAdFileStorage_id.value = null
   visibleCreateCard.value = true
-}
-
-const backToCategoryStep = () => {
-  visibleCreateCard.value = false
-  visibleCategories.value = true
 }
 
 const myUploaderNewAd = async (event: any) => {
@@ -655,17 +650,33 @@ const myUploaderNewAd = async (event: any) => {
 }
 
 const submitNewAd = async () => {
-  if (!selectedMaterial_Name.value) {
-    toast.add({ severity: 'error', summary: "Поле 'Товар' не заполнено", life: 3000 })
-    return
-  }
-  if (!selectedMeasure_Name.value) {
-    toast.add({ severity: 'error', summary: "Поле 'Ед.измерения' не заполнено", life: 3000 })
+  const materialName = typeof selectedMaterial_Name.value === 'object' && selectedMaterial_Name.value !== null
+    ? selectedMaterial_Name.value.Name
+    : String(selectedMaterial_Name.value || '')
+
+  if (!materialName.trim()) {
+    toast.add({ severity: 'error', summary: "Поле 'Что продаете или предлагаете' не заполнено", life: 3000 })
     return
   }
 
+  if (!selectedCategory.value) {
+    toast.add({ severity: 'error', summary: "Пожалуйста, выберите категорию из каталога", life: 3000 })
+    return
+  }
+
+  // Автоматически берем дефолтную единицу измерения из справочника, если она есть
+  const defaultMeasure = MeasureResponse?.Entity?.[0] || { id: 1, Name: 'шт.' }
+
   creatingAdLoading.value = true
   try {
+    const rawPrice = String(newAd.value.Price || '').replace(/\s/g, '')
+    const numericPrice = Number(rawPrice) || null
+
+    let finalDescription = newAd.value.Description || ''
+    if (newAd.value.Location) {
+      finalDescription += `\n\nЛокация: ${newAd.value.Location}`
+    }
+
     const body = {
       Token,
       module: 'shop',
@@ -673,12 +684,12 @@ const submitNewAd = async () => {
       data: {
         DocMovement: {
           Category_id: selectedCategory.value?.id,
-          Material_Name: selectedMaterial_Name.value.Name,
-          Material_id: selectedMaterial_Name.value.id,
-          Measure_Name: selectedMeasure_Name.value.Name,
-          Measure_id: selectedMeasure_Name.value.id,
-          Description: newAd.value.Description,
-          Price: newAd.value.Price,
+          Material_Name: materialName,
+          Material_id: typeof selectedMaterial_Name.value === 'object' && selectedMaterial_Name.value !== null ? selectedMaterial_Name.value.id : null,
+          Measure_Name: defaultMeasure.Name,
+          Measure_id: defaultMeasure.id,
+          Description: finalDescription,
+          Price: numericPrice,
           FileStorage_id: newAdFileStorage_id.value,
           Status: 'draft',
           DictionaryType: 'food',
