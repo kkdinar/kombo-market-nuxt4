@@ -1,9 +1,17 @@
 import type { ToastServiceMethods } from "primevue/toastservice";
 
 const runtimeConfig: any = useRuntimeConfig();
-const apiUrl = new URL('api', runtimeConfig.public.baseURL).toString();
-export const uploadUrl = new URL('upload', runtimeConfig.public.baseURL).toString();
-export const downloadUrl = new URL('download', runtimeConfig.public.baseURL).toString();
+const getBaseUrl = (): string => {
+  const url = runtimeConfig.public.baseURL || '';
+  if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+    return url;
+  }
+  return 'http://localhost';
+};
+const base = getBaseUrl();
+const apiUrl = new URL('api', base).toString();
+export const uploadUrl = new URL('upload', base).toString();
+export const downloadUrl = new URL('download', base).toString();
 
 async function request(method: 'GET' | 'POST' | 'DELETE', query?: MessageBody, body?: MessageBody): Promise<ApiResponse> {
 
