@@ -273,7 +273,7 @@ await guestReg(runtimeConfig.public.ORG)
 
 const dadataToken = runtimeConfig.public.dadataToken || null
 const businessFormName: any = runtimeConfig.public.businessFormName
-const Token = localStorage.getItem('Token') || ''
+const Token = process.client ? (localStorage.getItem('Token') || '') : ''
 
 // Geolocation object (Dinar's tracking coordinates)
 const location: any = {}
@@ -544,7 +544,7 @@ const clickAddToFavorite = async (data: any) => {
 // Categories layer
 const categories: any = ref([])
 const categoriesResponse: any = await post({
-  Token: localStorage.getItem('Token') || '',
+  Token: process.client ? (localStorage.getItem('Token') || '') : '',
   module: 'business',
   form: businessFormName,
   method: 'getCategoriesFirstLayer',
