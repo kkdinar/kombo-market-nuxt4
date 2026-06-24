@@ -89,8 +89,8 @@
           @click="filterCategories(cat.Name)"
           class="category-card p-6 bg-white border border-slate-100 rounded-[2rem] flex flex-col items-center text-center group hover:border-khaki-mid/10"
         >
-          <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4 shadow-sm group-hover:bg-khaki-dark group-hover:shadow-md transition-all">
-            <CategoryIcon :icon="getIconForCategory(cat.Name, idx)" />
+          <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-4xl mb-4 shadow-sm group-hover:bg-khaki-dark group-hover:shadow-md transition-all">
+            {{ getEmojiForCategory(cat.Name, idx) }}
           </div>
           <span class="text-[10px] font-black text-slate-800 leading-tight uppercase group-hover:text-khaki-mid transition-colors">
             {{ cat.Name }}
@@ -332,18 +332,18 @@ const triggerCitySelector = () => {
 }
 
 // Map helper categories icons dynamically
-const getIconForCategory = (catName: string, index: number): string => {
+const getEmojiForCategory = (catName: string, index: number): string => {
   const name = catName.toLowerCase()
-  if (name.includes('ремонт') || name.includes('строй')) return 'repair'
-  if (name.includes('транспорт') || name.includes('перевоз')) return 'transport'
-  if (name.includes('авто')) return 'autoservice'
-  if (name.includes('it') || name.includes('информа') || name.includes('разраб')) return 'it'
-  if (name.includes('делов') || name.includes('юрист') || name.includes('бухг')) return 'business'
-  if (name.includes('техн') || name.includes('электр')) return 'tech'
-  if (name.includes('обуч') || name.includes('курс')) return 'education'
+  if (name.includes('ремонт') || name.includes('строй')) return '🏗️'
+  if (name.includes('транспорт') || name.includes('перевоз')) return '🚚'
+  if (name.includes('авто')) return '🔧'
+  if (name.includes('it') || name.includes('информа') || name.includes('разраб') || name.includes('дизайн')) return '💻'
+  if (name.includes('делов') || name.includes('юрист') || name.includes('бухг')) return '💼'
+  if (name.includes('техн') || name.includes('электр') || name.includes('бытов') || name.includes('мобил')) return '📱'
+  if (name.includes('обуч') || name.includes('курс') || name.includes('язык')) return '🎓'
 
-  const fallbackIcons = ['repair', 'transport', 'autoservice', 'it', 'business', 'tech', 'education']
-  return fallbackIcons[index % fallbackIcons.length]
+  const fallbackEmojis = ['🏗️', '🚚', '🔧', '💻', '💼', '📱', '🎓']
+  return fallbackEmojis[index % fallbackEmojis.length]
 }
 
 // Guest Checking
