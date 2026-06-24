@@ -175,69 +175,79 @@
       </div>
     </Dialog>
 
-    <!-- Шаг 1: выбор категории (от Динара, стилизовано) -->
-    <Dialog v-model:visible="visibleCategories" modal header="Выберите категорию" :style="{ width: '420px' }">
-      <div class="cat-dialog-grid">
-        <button v-for="cat in categories" :key="cat.id" class="cat-dialog-item font-bold" @click="selectCategoryForAd(cat)">
-          {{ cat.Name }}
-        </button>
-      </div>
-    </Dialog>
-
-    <!-- Шаг 2: основные поля карточки товара (от Динара, стилизовано) -->
-    <Dialog v-model:visible="visibleCreateCard" modal header="Новое объявление" :style="{ width: '480px' }">
-      <div class="p-4">
-        <div class="selected-category-row flex items-center justify-between mb-4">
-          <span><b>Категория: </b></span>
-          <div class="selected-category-chip px-3 py-1 bg-neon-lemon/20 text-khaki-dark border border-neon-lemon rounded-full text-xs font-bold">
-            {{ selectedCategory?.Name }}
-            <button type="button" class="chip-change text-khaki-mid underline ml-2 hover:text-khaki-dark" @click="backToCategoryStep">Изменить</button>
-          </div>
-        </div>
-        <Divider />
-
-        <div class="mb-4">
-          <label class="block text-xs font-black text-slate-400 mb-2">НАИМЕНОВАНИЕ ТОВАРА</label>
-          <AutoComplete v-model="selectedMaterial_Name" :suggestions="filteredMaterial_Name" dropdown optionLabel="Name"
-            forceSelection @complete="searchMaterial_Name($event)" class="w-full">
-          </AutoComplete>
-        </div>
-
-        <div class="mb-4">
-          <label class="block text-xs font-black text-slate-400 mb-2">ЕД. ИЗМЕРЕНИЯ</label>
-          <AutoComplete v-model="selectedMeasure_Name" :suggestions="filteredMeasure_Name" dropdown optionLabel="Name"
-            forceSelection @complete="searchMeasure_Name($event)" class="w-full">
-          </AutoComplete>
-        </div>
-
-        <div class="mb-4">
-          <label class="block text-xs font-black text-slate-400 mb-2">СТОИМОСТЬ (РУБЛИ)</label>
-          <InputNumber id="newAdPrice" v-model="newAd.Price" mode="decimal" :minFractionDigits="2" class="w-full" />
-        </div>
-
-        <div class="mb-4">
-          <label class="block text-xs font-black text-slate-400 mb-2">ОПИСАНИЕ ТОВАРА</label>
-          <Textarea id="newAdDescription" v-model="newAd.Description" :autoResize="true" rows="4" class="w-full" />
-        </div>
-
-        <div class="mb-4">
-          <label class="block text-xs font-black text-slate-400 mb-2">ГЛАВНОЕ ФОТО</label>
-          <FileUpload mode="basic" name="demo[]" :customUpload="true" :auto="true" :maxFileSize="10000000"
-            chooseLabel="Выбрать главное фото товара" @uploader="myUploaderNewAd" class="w-full" />
-          <div v-if="newAdImageUrl" class="mt-4 flex justify-center">
-            <Image :src="newAdImageUrl" alt="Фото товара" width="120" class="rounded-xl border border-slate-200" />
+    <!-- Шаг 1: выбор категории (кастомный дизайн v1.5.0) -->
+    <Transition name="fade">
+      <div v-if="visibleCategories" class="fixed inset-0 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md z-[1100]">
+        <div class="bg-white rounded-[3rem] w-full max-w-md shadow-2xl p-10 relative">
+          <button @click="visibleCategories = false" class="absolute top-6 right-8 text-4xl text-slate-300 hover:text-khaki-dark leading-none">&times;</button>
+          <h3 class="text-3xl font-black text-khaki-dark mb-8 uppercase">Выберите категорию</h3>
+          <div class="cat-dialog-grid">
+            <button v-for="cat in categories" :key="cat.id" class="cat-dialog-item font-bold" @click="selectCategoryForAd(cat)">
+              {{ cat.Name }}
+            </button>
           </div>
         </div>
       </div>
+    </Transition>
 
-      <template #footer>
-        <div class="flex gap-3 justify-end w-full">
-          <Button label="Назад" class="p-button-text" @click="backToCategoryStep" />
-          <Button label="Опубликовать" icon="pi pi-check" class="p-button-success btn-neon px-6 py-2 rounded-xl" @click="submitNewAd"
-            :loading="creatingAdLoading" :disabled="!selectedMaterial_Name || !selectedMeasure_Name" />
+    <!-- Шаг 2: основные поля карточки товара (кастомный дизайн v1.5.0) -->
+    <Transition name="fade">
+      <div v-if="visibleCreateCard" class="fixed inset-0 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md z-[1100]">
+        <div class="bg-white rounded-[3rem] w-full max-w-lg shadow-2xl p-10 relative max-h-[90vh] overflow-y-auto pr-4">
+          <button @click="visibleCreateCard = false" class="absolute top-6 right-8 text-4xl text-slate-300 hover:text-khaki-dark leading-none">&times;</button>
+          <h3 class="text-3xl font-black text-khaki-dark mb-6 uppercase">Новое объявление</h3>
+          
+          <div class="space-y-4">
+            <div class="selected-category-row flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-100">
+              <span class="text-sm font-bold text-khaki-dark">Категория:</span>
+              <div class="selected-category-chip px-3 py-1 bg-neon-lemon/20 text-khaki-dark border border-neon-lemon rounded-full text-xs font-bold flex items-center gap-2">
+                {{ selectedCategory?.Name }}
+                <button type="button" class="chip-change text-khaki-mid underline hover:text-khaki-dark" @click="backToCategoryStep">Изменить</button>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-black text-slate-400 mb-1">НАИМЕНОВАНИЕ ТОВАРА</label>
+              <AutoComplete v-model="selectedMaterial_Name" :suggestions="filteredMaterial_Name" dropdown optionLabel="Name"
+                forceSelection @complete="searchMaterial_Name($event)" class="w-full">
+              </AutoComplete>
+            </div>
+
+            <div>
+              <label class="block text-xs font-black text-slate-400 mb-1">ЕД. ИЗМЕРЕНИЯ</label>
+              <AutoComplete v-model="selectedMeasure_Name" :suggestions="filteredMeasure_Name" dropdown optionLabel="Name"
+                forceSelection @complete="searchMeasure_Name($event)" class="w-full">
+              </AutoComplete>
+            </div>
+
+            <div>
+              <label class="block text-xs font-black text-slate-400 mb-1">СТОИМОСТЬ (РУБЛИ)</label>
+              <InputNumber id="newAdPrice" v-model="newAd.Price" mode="decimal" :minFractionDigits="2" class="w-full" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-black text-slate-400 mb-1">ОПИСАНИЕ ТОВАРА</label>
+              <Textarea id="newAdDescription" v-model="newAd.Description" :autoResize="true" rows="3" class="w-full" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-black text-slate-400 mb-1">ГЛАВНОЕ ФОТО</label>
+              <FileUpload mode="basic" name="demo[]" :customUpload="true" :auto="true" :maxFileSize="10000000"
+                chooseLabel="Выбрать фото" @uploader="myUploaderNewAd" class="w-full" />
+              <div v-if="newAdImageUrl" class="mt-3 flex justify-center">
+                <Image :src="newAdImageUrl" alt="Фото товара" width="100" class="rounded-xl border border-slate-200" />
+              </div>
+            </div>
+
+            <div class="flex gap-3 justify-end pt-4 border-t border-slate-100">
+              <Button label="Назад" class="p-button-text hover:text-khaki-dark" @click="backToCategoryStep" />
+              <Button label="Опубликовать" icon="pi pi-check" class="btn-neon px-6 py-2 rounded-xl text-sm" @click="submitNewAd"
+                :loading="creatingAdLoading" :disabled="!selectedMaterial_Name || !selectedMeasure_Name" />
+            </div>
+          </div>
         </div>
-      </template>
-    </Dialog>
+      </div>
+    </Transition>
 
   </div>
 </template>
@@ -804,5 +814,15 @@ watch(showLogin, (newVal) => {
   font-size: 12px;
   cursor: pointer;
   text-decoration: underline;
+}
+
+/* Анимация плавного появления модалок */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

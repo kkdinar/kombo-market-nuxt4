@@ -127,11 +127,36 @@
         </div>
       </div>
     </Dialog>
+
+    <!-- 5. Modal: Support (showSupport) -->
+    <Transition name="fade">
+      <div v-if="showSupport" class="fixed inset-0 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md z-[1100]">
+        <div class="bg-white rounded-[3rem] w-full max-w-lg shadow-2xl p-10 relative">
+          <button @click="showSupport = false" class="absolute top-6 right-8 text-4xl text-slate-300 hover:text-khaki-dark leading-none">&times;</button>
+          <h3 class="text-3xl font-black text-khaki-dark mb-2 uppercase">Техподдержка</h3>
+          <p class="text-slate-400 font-bold text-[10px] mb-8 uppercase italic">Помощь 24/7</p>
+          <div class="space-y-4">
+            <input type="text" placeholder="ВАШЕ ИМЯ" v-model="supportForm.name" class="border-2 border-slate-100 rounded-2xl px-5 py-3 w-full outline-none focus:border-neon-lemon" />
+            <select v-model="supportForm.type" class="border-2 border-slate-100 rounded-2xl px-5 py-3 w-full outline-none focus:border-neon-lemon font-bold text-khaki-dark">
+              <option>Жалоба на объявление</option>
+              <option>Техническая ошибка</option>
+              <option>Финансовый вопрос</option>
+              <option>Другое</option>
+            </select>
+            <textarea rows="4" placeholder="Опишите ситуацию..." v-model="supportForm.message" class="border-2 border-slate-100 rounded-2xl px-5 py-3 w-full outline-none focus:border-neon-lemon"></textarea>
+            <button @click="submitSupport" class="btn-neon w-full py-5 rounded-2xl text-xl mt-4 cursor-pointer">ОТПРАВИТЬ</button>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import { useToast } from 'primevue/usetoast'
+
+const toast = useToast()
 
 const props = defineProps<{
   categories: any[]
@@ -146,8 +171,32 @@ const {
   showAbout,
   selectedProduct,
   selectedPromo,
-  showOrder
+  showOrder,
+  showSupport
 } = useComboState()
+
+// Support Form State & Submission
+const supportForm = ref({ name: '', type: 'Жалоба на объявление', message: '' })
+const submitSupport = () => {
+  if (!supportForm.value.name.trim()) {
+    toast.add({ severity: 'warn', summary: 'Пожалуйста, введите ваше имя.', life: 3000 })
+    return
+  }
+  if (!supportForm.value.message.trim()) {
+    toast.add({ severity: 'warn', summary: 'Пожалуйста, опишите ситуацию.', life: 3000 })
+    return
+  }
+  
+  toast.add({
+    severity: 'success',
+    summary: 'Обращение отправлено!',
+    detail: 'Служба поддержки свяжется с вами в ближайшее время.',
+    life: 3000
+  })
+  
+  supportForm.value = { name: '', type: 'Жалоба на объявление', message: '' }
+  showSupport.value = false
+}
 
 // Computed properties for v-model mapping since Dialog component uses writable boolean ref
 const isProductVisible = computed({
@@ -172,3 +221,14 @@ const applyPromo = () => {
   }
 }
 </script>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
