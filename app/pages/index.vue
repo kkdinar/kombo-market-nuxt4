@@ -13,16 +13,12 @@
       </div>
 
       <div class="flex-[2] flex gap-3">
-        <AutoComplete
+        <input
           v-model="TextToFilter"
-          :suggestions="filteredText"
-          forceSelection
-          fluid
-          optionLabel="Name"
-          @complete="searchTextToFilter($event)"
+          type="text"
           @keydown.enter="filterFilteredCard"
           placeholder="Поиск категории, услуги или товара..."
-          class="flex-1 bg-white shadow-sm text-lg"
+          class="flex-1 bg-white shadow-sm text-lg px-6 py-4 rounded-2xl border-none outline-none font-bold"
         />
         <button
           @click="filterFilteredCard"
@@ -165,6 +161,7 @@
       :clickAddToFavorite="clickAddToFavorite"
       :clickShowCard="clickShowCard"
       :filterCategories="filterCategories"
+      :clickPostAd="clickPostAd"
     />
 
     <!-- Local Dialog for Guest Alert -->

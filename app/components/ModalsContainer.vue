@@ -138,6 +138,7 @@ const props = defineProps<{
   clickAddToFavorite: Function
   clickShowCard: Function
   filterCategories: Function
+  clickPostAd: Function
 }>()
 
 const {
@@ -166,6 +167,8 @@ const selectCategory = (catName: string) => {
 
 const applyPromo = () => {
   selectedPromo.value = null
-  props.clickShowCard({ typeOfSale: 'Service', id: '' })
+  if (props.clickPostAd) {
+    props.clickPostAd()
+  }
 }
 </script>
