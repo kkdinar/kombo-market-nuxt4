@@ -404,6 +404,19 @@ const demoProducts = [
 ]
 
 // API Data fetching
+const userCreatedProducts = ref<any[]>([])
+
+if (process.client) {
+  try {
+    const saved = localStorage.getItem('user_created_products')
+    if (saved) {
+      userCreatedProducts.value = JSON.parse(saved)
+    }
+  } catch (e) {
+    console.error('Failed to load user created products', e)
+  }
+}
+
 const FilteredCard: any = ref([])
 const EntityFilteredCard: any = ref([])
 const TextToFilter = ref('')
@@ -424,6 +437,7 @@ const fillEntity = async () => {
     FilteredCard.value = []
     EntityFilteredCard.value = []
     
+    const apiCards = []
     if (CardEntity.length > 0) {
       for (const { id, Material_Name, Description, FileStorage_id, org, Price, Level = 0, inFavorit, Service_Name, typeOfSale, Analytics } of CardEntity) {
         const nameValue = Material_Name || Service_Name || ''
@@ -438,18 +452,17 @@ const fillEntity = async () => {
           typeOfSale,
           Analytics
         }
-        FilteredCard.value.push(cardData)
-        EntityFilteredCard.value.push(cardData)
+        apiCards.push(cardData)
       }
-    } else {
-      // Фолбэк на демонстрационные товары из v1.5.0, если база данных пуста
-      FilteredCard.value = [...demoProducts]
-      EntityFilteredCard.value = [...demoProducts]
     }
+    
+    const baseCards = apiCards.length > 0 ? apiCards : demoProducts
+    FilteredCard.value = [...userCreatedProducts.value, ...baseCards]
+    EntityFilteredCard.value = [...userCreatedProducts.value, ...baseCards]
   } catch (error) {
     console.error('fillEntity error, falling back to demo products:', error)
-    FilteredCard.value = [...demoProducts]
-    EntityFilteredCard.value = [...demoProducts]
+    FilteredCard.value = [...userCreatedProducts.value, ...demoProducts]
+    EntityFilteredCard.value = [...userCreatedProducts.value, ...demoProducts]
   }
 }
 fillEntity()
@@ -768,6 +781,29 @@ const submitNewAd = async () => {
       toast.add({ severity: 'error', summary: answer.Error, life: 3000 })
       return
     }
+
+    // Добавляем созданное объявление в локальный массив для мгновенного отображения в ленте
+    const isService = selectedCategory.value?.Name === 'Услуги' || selectedCategory.value?.title === 'Услуги'
+    const newLocalAd = {
+      id: answer.DocData?.id || Date.now(),
+      Name: materialName,
+      Description: finalDescription,
+      Price: numericPrice ? numericPrice.toLocaleString('ru-RU') : '0',
+      imageUrl: newAdImageUrl.value || 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=400',
+      Level: 5,
+      inFavorit: false,
+      typeOfSale: isService ? 'Service' : 'Product'
+    }
+    userCreatedProducts.value.unshift(newLocalAd)
+
+    if (process.client) {
+      try {
+        localStorage.setItem('user_created_products', JSON.stringify(userCreatedProducts.value))
+      } catch (e) {
+        console.error('Failed to save user created products to localStorage', e)
+      }
+    }
+
     visibleCreateCard.value = false
     toast.add({ severity: 'success', summary: 'Карточка создана как черновик', life: 3000 })
     fillEntity()
