@@ -32,12 +32,13 @@
     <!-- ROW 3: ACTION & QUICK CATEGORIES -->
     <section class="max-w-[1400px] mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
       <div class="min-w-[280px] flex flex-col gap-6">
-        <button @click="clickPostAd" class="btn-neon py-6 rounded-[2rem] text-xl tracking-tight shadow-2xl cursor-pointer">
-          РАЗМЕСТИТЬ ОБЪЯВЛЕНИЕ
+        <button @click="clickPostAd" class="btn-post-ad">
+          <span class="text-lg">✨</span>
+          <span>Разместить объявление</span>
         </button>
-        <button @click="showSupportModal" class="flex items-center gap-4 text-khaki-mid font-black px-6 py-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all cursor-pointer">
-          <span class="text-2xl">🎧</span>
-          <span>ТЕХПОДДЕРЖКА</span>
+        <button @click="showSupportModal" class="btn-support-ad">
+          <span class="text-lg">🎧</span>
+          <span>Техподдержка</span>
         </button>
       </div>
 
@@ -78,11 +79,11 @@
     <!-- ROW 5: CATEGORY GRID (CUSTOM SVG ICONS) -->
     <section class="max-w-[1400px] mx-auto px-4 py-12">
       <h3 class="text-2xl font-black mb-8 text-khaki-dark uppercase tracking-tight">Популярные категории</h3>
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4">
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
         <div
-          v-for="(cat, idx) in categories"
+          v-for="(cat, idx) in popularCategories"
           :key="cat.id"
-          @click="filterCategories(cat.Name)"
+          @click="clickCategory(cat)"
           class="category-card p-6 bg-white border border-slate-100 rounded-[2rem] flex flex-col items-center text-center group hover:border-khaki-mid/10"
         >
           <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-4xl mb-4 shadow-sm group-hover:bg-khaki-dark group-hover:shadow-md transition-all">
@@ -157,7 +158,7 @@
 
     <!-- Master Modals Container -->
     <ModalsContainer
-      :categories="categories"
+      :categories="categoriesWithSubcategories"
       :clickAddToFavorite="clickAddToFavorite"
       :clickShowCard="clickShowCard"
       :filterCategories="filterCategories"
@@ -178,12 +179,12 @@
     <!-- Модалка: Создать объявление (восстановленный точный дизайн v1.5.0) -->
     <Transition name="fade">
       <div v-if="visibleCreateCard" class="fixed inset-0 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md z-[1100]">
-        <div class="bg-white rounded-[3rem] w-full max-w-2xl shadow-2xl p-12 overflow-y-auto max-h-[90vh] relative">
+        <div class="bg-white rounded-[3rem] w-full max-w-2xl shadow-2xl p-10 overflow-y-auto max-h-[90vh] relative create-ad-modal">
           <button @click="visibleCreateCard = false" class="absolute top-6 right-8 text-4xl text-slate-300 hover:text-khaki-dark leading-none">&times;</button>
           
-          <h3 class="text-3xl font-black text-khaki-dark mb-8 uppercase">Создать объявление</h3>
+          <h3 class="text-3xl font-black text-khaki-dark mb-6 uppercase">Создать объявление</h3>
           
-          <div class="space-y-6">
+          <div class="space-y-4">
             <!-- 1. Поле для ввода: Что продаете или предлагаете -->
             <div>
               <AutoComplete 
@@ -209,10 +210,10 @@
             <!-- 3. Поле подробного описания с возможностью его расширить (resize-y) -->
             <div>
               <textarea 
-                rows="4" 
+                rows="3" 
                 v-model="newAd.Description" 
                 placeholder="ПОДРОБНОЕ ОПИСАНИЕ..." 
-                class="w-full border-2 border-slate-100 rounded-2xl px-5 py-3 outline-none focus:border-neon-lemon resize-y min-h-[120px] font-semibold text-khaki-dark"
+                class="w-full border-2 border-slate-100 rounded-2xl px-5 py-3 outline-none focus:border-neon-lemon resize-y min-h-[100px] font-semibold text-khaki-dark"
               ></textarea>
             </div>
 
@@ -246,7 +247,7 @@
             <button 
               @click="submitNewAd" 
               :disabled="creatingAdLoading"
-              class="btn-neon w-full py-6 rounded-[2rem] text-2xl uppercase mt-6 cursor-pointer flex items-center justify-center gap-2"
+              class="btn-neon w-full py-3 rounded-xl text-sm font-black uppercase mt-3 cursor-pointer flex items-center justify-center gap-2"
             >
               <span v-if="creatingAdLoading">Публикация...</span>
               <span v-else>Опубликовать</span>
@@ -355,8 +356,13 @@ const getEmojiForCategory = (catName: string, index: number): string => {
   if (name.includes('делов') || name.includes('юрист') || name.includes('бухг')) return '💼'
   if (name.includes('техн') || name.includes('электр') || name.includes('бытов') || name.includes('мобил')) return '📱'
   if (name.includes('обуч') || name.includes('курс') || name.includes('язык')) return '🎓'
+  if (name.includes('клин') || name.includes('уборк')) return '🧹'
+  if (name.includes('здоров') || name.includes('спорт')) return '🍏'
+  if (name.includes('красот') || name.includes('уход')) return '💅'
+  if (name.includes('меропр') || name.includes('праздн')) return '🎉'
+  if (name.includes('фото') || name.includes('видео')) return '📷'
 
-  const fallbackEmojis = ['🏗️', '🚚', '🔧', '💻', '💼', '📱', '🎓']
+  const fallbackEmojis = ['🏗️', '🚚', '🔧', '💻', '💼', '📱', '🎓', '🧹', '🍏', '💅', '🎉', '📷']
   return fallbackEmojis[index % fallbackEmojis.length]
 }
 
@@ -380,11 +386,11 @@ const quickCategories = ["Недвижимость", "Авто", "Транспо
 
 // VIP Mock cards
 const promoCards = [
-  { id: 1, title: "Ремонт домов", img: "https://images.unsplash.com/photo-1503387762-592dea58ef21?auto=format&fit=crop&w=500" },
-  { id: 2, title: "Автосервис", img: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?auto=format&fit=crop&w=500" },
-  { id: 3, title: "IT Решения", img: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=500" },
-  { id: 4, title: "Клининг", img: "https://images.unsplash.com/photo-1527515545081-5db817172677?auto=format&fit=crop&w=500" },
-  { id: 5, title: "Логистика", img: "https://images.unsplash.com/photo-1586769852836-bc069f19e1b6?auto=format&fit=crop&w=500" }
+  { id: 1, title: "Ремонт домов", img: "/images/promo/house_facade.jpg" },
+  { id: 2, title: "Автосервис", img: "/images/promo/car_service.jpg" },
+  { id: 3, title: "IT Решения", img: "/images/promo/it_solutions.jpg" },
+  { id: 4, title: "Клининг", img: "/images/promo/cleaning.jpg" },
+  { id: 5, title: "Логистика", img: "/images/promo/logistics.jpg" }
 ]
 
 // Demo fallback products from v1.5.0 layout
@@ -482,8 +488,7 @@ const filterFilteredCard = () => {
 }
 
 const quickSelect = (catName: string) => {
-  TextToFilter.value = catName
-  filterFilteredCard()
+  showCatalog.value = true
 }
 
 // Autocomplete suggestions
@@ -547,9 +552,71 @@ const categoriesResponse: any = await post({
 })
 categories.value = categoriesResponse?.Entity || []
 
+// Демо-категории для заполнения блока популярных категорий (всего 12) c подкатегориями
+const demoCategories = [
+  { id: 'demo-cat-1', Name: "Ремонт", items: ["Стройка домов", "Электрика", "Сантехника", "Отделка", "Окна"] },
+  { id: 'demo-cat-2', Name: "Транспорт", items: ["Грузоперевозки", "Грузчики", "Аренда спецтехники", "Эвакуация"] },
+  { id: 'demo-cat-3', Name: "Автосервис", items: ["СТО", "Шиномонтаж", "Покраска", "Диагностика"] },
+  { id: 'demo-cat-4', Name: "IT и разработка", items: ["Сайты", "CRM", "Дизайн", "Настройка сетей"] },
+  { id: 'demo-cat-5', Name: "Деловые услуги", items: ["Юристы", "Бухгалтерия", "Бизнес-трекинг", "Маркетинг"] },
+  { id: 'demo-cat-6', Name: "Техника", items: ["Телефоны", "Бытовая техника", "Цифровая", "Аудио/Видео"] },
+  { id: 'demo-cat-7', Name: "Обучение", items: ["Языки", "Курсы", "Школьные предметы"] },
+  { id: 'demo-cat-8', Name: "Клининг и уборка", items: ["Уборка квартир", "Мытье окон", "Химчистка", "Генеральная уборка"] },
+  { id: 'demo-cat-9', Name: "Здоровье и спорт", items: ["Йога", "Фитнес-тренер", "Массаж", "Диетология"] },
+  { id: 'demo-cat-10', Name: "Красота и уход", items: ["Макияж", "Маникюр", "Стрижки", "Косметология"] },
+  { id: 'demo-cat-11', Name: "Мероприятия", items: ["Ведущие", "Фотозоны", "Кейтеринг", "Аниматоры"] },
+  { id: 'demo-cat-12', Name: "Фото и видео", items: ["Свадебная съемка", "Портреты", "Монтаж видео", "Аэросъемка"] }
+]
+
+// Вычисляемое свойство для блока "Популярные категории" (всего 12 штук: 6 в ряд, 2 ряда)
+const popularCategories = computed(() => {
+  const list = [...categories.value]
+  if (list.length < 12) {
+    const existingNames = new Set(list.map(c => c.Name.toLowerCase()))
+    for (const demo of demoCategories) {
+      if (!existingNames.has(demo.Name.toLowerCase())) {
+        list.push(demo)
+      }
+      if (list.length >= 12) break
+    }
+  }
+  
+  // Добавляем items из demoCategories к категориям, пришедшим из API (если у них нет своих)
+  return list.slice(0, 12).map(cat => {
+    const demo = demoCategories.find(d => d.Name.toLowerCase() === cat.Name.toLowerCase())
+    return {
+      ...cat,
+      items: cat.items || (demo ? demo.items : [])
+    }
+  })
+})
+
+// Вычисляемый полный список категорий с подкатегориями (для модалки полного каталога)
+const categoriesWithSubcategories = computed(() => {
+  const list = categories.value.length > 0 ? [...categories.value] : [...demoCategories]
+  return list.map(cat => {
+    const demo = demoCategories.find(d => d.Name.toLowerCase() === cat.Name.toLowerCase())
+    return {
+      ...cat,
+      title: cat.Name,
+      items: cat.items || (demo ? demo.items : [])
+    }
+  })
+})
+
 const filterCategories = (categoryName: string) => {
   TextToFilter.value = categoryName
   filterFilteredCard()
+}
+
+const clickCategory = (cat: any) => {
+  const demo = demoCategories.find(d => d.Name.toLowerCase() === cat.Name.toLowerCase())
+  selectedCategory.value = {
+    id: cat.id,
+    Name: cat.Name,
+    title: cat.Name,
+    items: cat.items || (demo ? demo.items : [])
+  }
 }
 
 const clickShowCard = (data: any) => {
@@ -835,5 +902,102 @@ watch(showLogin, (newVal) => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* Стилизация модалки создания объявления */
+.create-ad-modal input,
+.create-ad-modal textarea,
+.create-ad-modal select,
+.create-ad-modal :deep(input),
+.create-ad-modal :deep(select),
+.create-ad-modal :deep(textarea),
+.create-ad-modal :deep(.p-autocomplete-input),
+.create-ad-modal :deep(.p-inputtext) {
+  background-color: #ffffff !important;
+  color: #2d3419 !important;
+  border: 2px solid #f1f5f9 !important;
+}
+
+.create-ad-modal input::placeholder,
+.create-ad-modal textarea::placeholder,
+.create-ad-modal :deep(input)::placeholder,
+.create-ad-modal :deep(textarea)::placeholder,
+.create-ad-modal :deep(.p-autocomplete-input)::placeholder,
+.create-ad-modal :deep(.p-inputtext)::placeholder {
+  color: #94a3b8 !important;
+  opacity: 1 !important;
+}
+
+.create-ad-modal :deep(.p-autocomplete) {
+  width: 100% !important;
+}
+
+.create-ad-modal :deep(.p-fileupload) {
+  display: flex;
+  justify-content: center;
+}
+
+.create-ad-modal :deep(.p-fileupload-choose) {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  padding: 8px 16px !important;
+  border-radius: 12px !important;
+  text-transform: uppercase;
+  transition: all 0.2s;
+  width: auto !important;
+  margin: 0 auto;
+}
+
+.create-ad-modal :deep(.p-fileupload-choose:hover) {
+  background-color: #e2e8f0 !important;
+  color: #1e293b !important;
+}
+
+/* Стили для главных кнопок левой панели */
+.btn-post-ad, .btn-support-ad {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 24px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.btn-post-ad {
+  background-color: #DFFF00;
+  color: #2D3419;
+  border: 2px solid #DFFF00;
+  box-shadow: 0 4px 20px rgba(223, 255, 0, 0.25);
+}
+
+.btn-post-ad:hover {
+  transform: translateY(-2px);
+  background-color: #e5ff1a;
+  border-color: #e5ff1a;
+  box-shadow: 0 8px 25px rgba(223, 255, 0, 0.4);
+}
+
+.btn-support-ad {
+  background-color: #2D3419;
+  color: #DFFF00;
+  border: 2px solid #2D3419;
+  box-shadow: 0 4px 20px rgba(45, 52, 25, 0.15);
+}
+
+.btn-support-ad:hover {
+  transform: translateY(-2px);
+  background-color: #3d4722;
+  border-color: #3d4722;
+  box-shadow: 0 8px 25px rgba(45, 52, 25, 0.3);
 }
 </style>
