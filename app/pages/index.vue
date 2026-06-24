@@ -370,6 +370,16 @@ const promoCards = [
   { id: 5, title: "Логистика", img: "https://images.unsplash.com/photo-1586769852836-bc069f19e1b6?auto=format&fit=crop&w=500" }
 ]
 
+// Demo fallback products from v1.5.0 layout
+const demoProducts = [
+  { id: 'demo-1', Name: "Ремонт квартир 'Под ключ'", Price: "45 000", typeOfSale: "Service", imageUrl: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=400", Description: "Сделаем быстро, качественно и с гарантией. Работаем по договору. Выезд мастера в течение часа.", Level: 5 },
+  { id: 'demo-2', Name: "iPhone 15 Pro Max 256GB", Price: "115 000", typeOfSale: "Product", imageUrl: "https://images.unsplash.com/photo-1696446701796-da61225697cc?auto=format&fit=crop&w=400", Description: "Абсолютно новый, оригинальный телефон в запечатанной коробке. Гарантия 1 год.", Level: 5 },
+  { id: 'demo-3', Name: "Грузоперевозки Москва-Сочи", Price: "12 500", typeOfSale: "Service", imageUrl: "https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&w=400", Description: "Перевезем любой груз быстро и бережно. Опытные водители, чистые машины.", Level: 5 },
+  { id: 'demo-4', Name: "Дизайн логотипа и брендбука", Price: "8 000", typeOfSale: "Service", imageUrl: "https://images.unsplash.com/photo-1626785774573-4b799315345d?auto=format&fit=crop&w=400", Description: "Разработаем стильный и уникальный дизайн для вашего бизнеса. 3 варианты на выбор.", Level: 5 },
+  { id: 'demo-5', Name: "Химчистка мебели", Price: "3 500", typeOfSale: "Service", imageUrl: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=400", Description: "Профессиональная чистка диванов, кресел и матрасов на дому. Безопасная химия.", Level: 5 },
+  { id: 'demo-6', Name: "Английский для бизнеса", Price: "1 200", typeOfSale: "Service", imageUrl: "https://images.unsplash.com/photo-1544652478-6653e09f18a2?auto=format&fit=crop&w=400", Description: "Индивидуальные занятия с носителем языка. Разговорная практика, деловая переписка.", Level: 5 }
+]
+
 // API Data fetching
 const FilteredCard: any = ref([])
 const EntityFilteredCard: any = ref([])
@@ -377,32 +387,46 @@ const TextToFilter = ref('')
 let CardEntity: any = []
 
 const fillEntity = async () => {
-  const { Entity = [] } = await post({
-    module: 'shop',
-    form: 'ShowCatalog',
-    method: 'getCatalog',
-    data: { DocMovement: {} },
-    Token,
-  })
-  CardEntity = []
-  CardEntity.push(...Entity)
-  FilteredCard.value = []
-  EntityFilteredCard.value = []
-  for (const { id, Material_Name, Description, FileStorage_id, org, Price, Level = 0, inFavorit, Service_Name, typeOfSale, Analytics } of CardEntity) {
-    const nameValue = Material_Name || Service_Name || ''
-    const cardData = {
-      id,
-      Name: nameValue,
-      Description,
-      Price,
-      imageUrl: getImageUrl(FileStorage_id, org),
-      Level: Number(Level),
-      inFavorit,
-      typeOfSale,
-      Analytics
+  try {
+    const response = await post({
+      module: 'shop',
+      form: 'ShowCatalog',
+      method: 'getCatalog',
+      data: { DocMovement: {} },
+      Token,
+    })
+    const Entity = response?.Entity || []
+    CardEntity = []
+    CardEntity.push(...Entity)
+    FilteredCard.value = []
+    EntityFilteredCard.value = []
+    
+    if (CardEntity.length > 0) {
+      for (const { id, Material_Name, Description, FileStorage_id, org, Price, Level = 0, inFavorit, Service_Name, typeOfSale, Analytics } of CardEntity) {
+        const nameValue = Material_Name || Service_Name || ''
+        const cardData = {
+          id,
+          Name: nameValue,
+          Description,
+          Price,
+          imageUrl: getImageUrl(FileStorage_id, org),
+          Level: Number(Level),
+          inFavorit,
+          typeOfSale,
+          Analytics
+        }
+        FilteredCard.value.push(cardData)
+        EntityFilteredCard.value.push(cardData)
+      }
+    } else {
+      // Фолбэк на демонстрационные товары из v1.5.0, если база данных пуста
+      FilteredCard.value = [...demoProducts]
+      EntityFilteredCard.value = [...demoProducts]
     }
-    FilteredCard.value.push(cardData)
-    EntityFilteredCard.value.push(cardData)
+  } catch (error) {
+    console.error('fillEntity error, falling back to demo products:', error)
+    FilteredCard.value = [...demoProducts]
+    EntityFilteredCard.value = [...demoProducts]
   }
 }
 fillEntity()
